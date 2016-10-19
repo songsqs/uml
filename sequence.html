@@ -1,0 +1,120 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <script src="underscore-min.js"></script>
+    <script src="raphael-min.js"></script>
+    <script src="sequence-diagram-min.js"></script>
+    <script src="jquery.min.js"></script>
+    <!-- <script src="https://d1n0x3qji82z53.cloudfront.net/src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script> -->
+  </head>
+  <body>
+    <table>
+      <tr style="width:100%;">
+        <div id="diagram" style="width:100%;overflow:auto;zoom:100%">
+
+        </div>
+      </tr>
+      <tr>
+        <select id="zoom" value="缩放" onchange="onZoomSelected()">
+          <option value="200%">200%</option>
+          <option value="190%">190%</option>
+          <option value="180%">180%</option>
+          <option value="170%">170%</option>
+          <option value="160%">160%</option>
+          <option value="150%">150%</option>
+          <option value="140%">140%</option>
+          <option value="130%">130%</option>
+          <option value="120%">120%</option>
+          <option value="110%">110%</option>
+          <option value="100%" selected="selected">100%</option>
+          <option value="90%">90%</option>
+          <option value="80%">80%</option>
+          <option value="70%">70%</option>
+          <option value="60%">60%</option>
+          <option value="50%">50%</option>
+          <option value="40%">40%</option>
+          <option value="30%">30%</option>
+          <option value="20%">20%</option>
+          <option value="10%">10%</option>
+        </select>
+      </tr>
+      <tr style="width:100%">
+        <div>
+          <textarea id="diagram_input" spellcheck="false" rows="20" style="width:100%" oninput="on_change()" >A->B:Does something</textarea>
+        </div>
+      </tr>
+      <tr>
+        <a href="#" id="download">下载为svg格式</a>
+        <input type="file" id="filePicker" value="加载文件" onchange="onLoadFile()" />
+      </tr>
+    </table>
+
+    <script>
+      var diagram_div = $('#diagram');
+      var diagram_input = $('#diagram_input');
+
+      var diagram = Diagram.parse(diagram_input.val());
+      var options = {
+        theme:"simple"
+      };
+      diagram.drawSVG('diagram',options);
+
+      var download_link = $('#download');
+      download_link.click(function(ev){
+          var svg = diagram_div.find('svg')[0];
+          var width = parseInt(svg.width.baseVal.value);
+          var height = parseInt(svg.height.baseVal.value);
+          var data = diagram_input.val();
+          var xml = '<?xml version="1.0" encoding="utf-8" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd"><svg xmlns="http://www.w3.org/2000/svg" width="' + width + '" height="' + height + '" xmlns:xlink="http://www.w3.org/1999/xlink"><source><![CDATA[' + data + ']]></source>' + svg.innerHTML + '</svg>';
+          var a = $(this);
+          a.attr("download","diagram.svg");
+          a.attr("href","data:image/svg+xml," + encodeURIComponent(xml));
+        }
+      );
+
+      function on_change(){
+        try{
+          var value = diagram_input.val();
+          var diagram = Diagram.parse(value);
+
+          //clear out old diagram
+          var diagram_div = $('#diagram');
+          diagram_div.html('');
+
+          var options = {
+            theme:"simple",
+            scale:0
+          };
+          diagram.drawSVG('diagram',options);;
+        }catch(err){
+          throw err;
+        }
+
+      }
+
+      function onLoadFile(){
+        var reader = new FileReader();
+        reader.onload = function()
+        {
+            loadSvgFile(this.result);
+        }
+        var f = document.getElementById("filePicker").files[0];
+        reader.readAsText(f);
+      }
+
+      function loadSvgFile(result){
+        // diagram_input.val(result);
+        diagram_input.val($(result).find("source").text());
+        on_change();
+      }
+
+      function onZoomSelected(){
+        var zoomValue = $('#zoom').val();
+        console.log(zoomValue);
+        var styleValue="width:100%;overflow:auto;zoom:"+zoomValue+";";
+        diagram_div.attr("style",styleValue);
+      }
+    </script>
+
+  </body>
+</html>
